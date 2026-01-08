@@ -33,7 +33,54 @@ const args = process.argv.slice(2);
 const hasGlobal = args.includes('--global') || args.includes('-g');
 const hasLocal = args.includes('--local') || args.includes('-l');
 
+// Parse --config-dir argument
+function parseConfigDirArg() {
+  const configDirIndex = args.findIndex(arg => arg === '--config-dir' || arg === '-c');
+  if (configDirIndex !== -1 && args[configDirIndex + 1]) {
+    return args[configDirIndex + 1];
+  }
+  // Also handle --config-dir=value format
+  const configDirArg = args.find(arg => arg.startsWith('--config-dir=') || arg.startsWith('-c='));
+  if (configDirArg) {
+    return configDirArg.split('=')[1];
+  }
+  return null;
+}
+const explicitConfigDir = parseConfigDirArg();
+const hasHelp = args.includes('--help') || args.includes('-h');
+
 console.log(banner);
+
+// Show help if requested
+if (hasHelp) {
+  console.log(`  ${yellow}Usage:${reset} npx get-shit-done-cc [options]
+
+  ${yellow}Options:${reset}
+    ${cyan}-g, --global${reset}              Install globally (to Claude config directory)
+    ${cyan}-l, --local${reset}               Install locally (to ./.claude in current directory)
+    ${cyan}-c, --config-dir <path>${reset}   Specify custom Claude config directory
+    ${cyan}-h, --help${reset}                Show this help message
+
+  ${yellow}Examples:${reset}
+    ${dim}# Install to default ~/.claude directory${reset}
+    npx get-shit-done-cc --global
+
+    ${dim}# Install to custom config directory (for multiple Claude accounts)${reset}
+    npx get-shit-done-cc --global --config-dir ~/.claude-bc
+
+    ${dim}# Using environment variable${reset}
+    CLAUDE_CONFIG_DIR=~/.claude-bc npx get-shit-done-cc --global
+
+    ${dim}# Install to current project only${reset}
+    npx get-shit-done-cc --local
+
+  ${yellow}Notes:${reset}
+    The --config-dir option is useful when you have multiple Claude Code
+    configurations (e.g., for different subscriptions). It takes priority
+    over the CLAUDE_CONFIG_DIR environment variable.
+`);
+  process.exit(0);
+}
 
 /**
  * Expand ~ to home directory (shell doesn't expand in env vars passed to node)
@@ -75,7 +122,8 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix) {
  */
 function install(isGlobal) {
   const src = path.join(__dirname, '..');
-  const configDir = expandTilde(process.env.CLAUDE_CONFIG_DIR);
+  // Priority: explicit --config-dir arg > CLAUDE_CONFIG_DIR env var > default ~/.claude
+  const configDir = expandTilde(explicitConfigDir) || expandTilde(process.env.CLAUDE_CONFIG_DIR);
   const defaultGlobalDir = configDir || path.join(os.homedir(), '.claude');
   const claudeDir = isGlobal
     ? defaultGlobalDir
@@ -123,7 +171,8 @@ function promptLocation() {
     output: process.stdout
   });
 
-  const globalPath = expandTilde(process.env.CLAUDE_CONFIG_DIR) || path.join(os.homedir(), '.claude');
+  const configDir = expandTilde(explicitConfigDir) || expandTilde(process.env.CLAUDE_CONFIG_DIR);
+  const globalPath = configDir || path.join(os.homedir(), '.claude');
   const globalLabel = globalPath.replace(os.homedir(), '~');
 
   console.log(`  ${yellow}Where would you like to install?${reset}
