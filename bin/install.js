@@ -36,8 +36,14 @@ const hasLocal = args.includes('--local') || args.includes('-l');
 // Parse --config-dir argument
 function parseConfigDirArg() {
   const configDirIndex = args.findIndex(arg => arg === '--config-dir' || arg === '-c');
-  if (configDirIndex !== -1 && args[configDirIndex + 1]) {
-    return args[configDirIndex + 1];
+  if (configDirIndex !== -1) {
+    const nextArg = args[configDirIndex + 1];
+    // Error if --config-dir is provided without a value or next arg is another flag
+    if (!nextArg || nextArg.startsWith('-')) {
+      console.error(`  ${yellow}--config-dir requires a path argument${reset}`);
+      process.exit(1);
+    }
+    return nextArg;
   }
   // Also handle --config-dir=value format
   const configDirArg = args.find(arg => arg.startsWith('--config-dir=') || arg.startsWith('-c='));
@@ -192,6 +198,9 @@ function promptLocation() {
 // Main
 if (hasGlobal && hasLocal) {
   console.error(`  ${yellow}Cannot specify both --global and --local${reset}`);
+  process.exit(1);
+} else if (explicitConfigDir && hasLocal) {
+  console.error(`  ${yellow}Cannot use --config-dir with --local${reset}`);
   process.exit(1);
 } else if (hasGlobal) {
   install(true);
