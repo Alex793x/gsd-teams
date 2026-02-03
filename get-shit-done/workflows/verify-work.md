@@ -91,6 +91,38 @@ Continue to `create_uat_file`.
 
 Parse $ARGUMENTS as phase number (e.g., "4") or plan number (e.g., "04-02").
 
+**First, check for active session (may have work not yet summarized):**
+
+```bash
+# Session integration: See get-shit-done/references/session-hydration.md
+# get_session_user() - from user-identity.md
+get_session_user() {
+  local raw
+  raw=$(git config user.name 2>/dev/null)
+  [ -z "$raw" ] && raw=$(whoami 2>/dev/null)
+  [ -z "$raw" ] && raw=$(hostname -s 2>/dev/null)
+  [ -z "$raw" ] && raw="unknown"
+
+  echo "$raw" \
+    | tr '[:upper:]' '[:lower:]' \
+    | tr ' ' '-' \
+    | tr -cd 'a-z0-9-' \
+    | sed 's/--*/-/g' \
+    | sed 's/^-//;s/-$//'
+}
+
+# Check for active session
+user=$(get_session_user)
+session_file=".planning/sessions/${user}/current-plan.md"
+if [ -f "$session_file" ]; then
+  plan_path=$(grep -m1 '^<!-- Plan:' "$session_file" | sed 's/.*Plan: \(.*\) -->/\1/')
+  complete=$(grep -c 'status="complete"' "$session_file" 2>/dev/null || echo 0)
+  total=$(grep -c '<task[^>]*type=' "$session_file" 2>/dev/null || echo 0)
+  echo "Active session found for: $plan_path"
+  echo "Tasks complete: $complete/$total"
+fi
+```
+
 ```bash
 # Find phase directory (match both zero-padded and unpadded)
 PADDED_PHASE=$(printf "%02d" ${PHASE_ARG} 2>/dev/null || echo "${PHASE_ARG}")
@@ -122,6 +154,39 @@ Examples:
   → Expected: "Clicking Reply opens inline composer below comment. Submitting shows reply nested under parent with visual indentation."
 
 Skip internal/non-observable items (refactors, type changes, etc.).
+
+**If active session exists with completed tasks but no SUMMARY.md yet:**
+
+The session file contains tasks that represent testable work. Extract testable items from completed tasks in the session:
+
+```bash
+# Check if session has completed tasks for a plan without SUMMARY
+if [ -f "$session_file" ] && [ "$complete" -gt 0 ]; then
+  plan_path=$(grep -m1 '^<!-- Plan:' "$session_file" | sed 's/.*Plan: \(.*\) -->/\1/')
+  summary_path="${plan_path/PLAN/SUMMARY}"
+
+  if [ ! -f "$summary_path" ]; then
+    echo "Note: Testing work from active session (not yet summarized)"
+    echo "Plan: $plan_path"
+    echo "Tasks complete: $complete"
+
+    # Extract completed task names from session for testing
+    grep -B5 'status="complete"' "$session_file" \
+      | grep '<name>' \
+      | sed 's/.*<name>\(.*\)<\/name>.*/\1/'
+  fi
+fi
+```
+
+When testing session work, add note to UAT:
+
+```
+Note: Testing work from active session (not yet summarized)
+Plan: [plan path from session]
+Tasks complete: [N]
+```
+
+This enables verification of in-progress work before SUMMARY.md is created.
 </step>
 
 <step name="create_uat_file">
