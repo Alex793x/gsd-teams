@@ -87,7 +87,7 @@ GSD-Teams adds the missing piece: **multiple developers can use GSD on the same 
 ## Getting Started
 
 ```bash
-npx get-shit-done-cc
+npx gsd-teams
 ```
 
 The installer prompts you to choose:
@@ -101,7 +101,7 @@ Verify with `/gsd:help` inside your chosen runtime.
 GSD evolves fast. Update periodically:
 
 ```bash
-npx get-shit-done-cc@latest
+npx gsd-teams@latest
 ```
 
 <details>
@@ -109,17 +109,17 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global   # Install to ~/.claude/
-npx get-shit-done-cc --claude --local    # Install to ./.claude/
+npx gsd-teams --claude --global   # Install to ~/.claude/
+npx gsd-teams --claude --local    # Install to ./.claude/
 
 # OpenCode (open source, free models)
-npx get-shit-done-cc --opencode --global # Install to ~/.config/opencode/
+npx gsd-teams --opencode --global # Install to ~/.config/opencode/
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global   # Install to ~/.gemini/
+npx gsd-teams --gemini --global   # Install to ~/.gemini/
 
 # All runtimes
-npx get-shit-done-cc --all --global      # Install to all directories
+npx gsd-teams --all --global      # Install to all directories
 ```
 
 Use `--global` (`-g`) or `--local` (`-l`) to skip the location prompt.
@@ -635,18 +635,18 @@ At milestone completion, GSD offers squash merge (recommended) or merge with his
 
 **Commands not working as expected?**
 - Run `/gsd:help` to verify installation
-- Re-run `npx get-shit-done-cc` to reinstall
+- Re-run `npx gsd-teams` to reinstall
 
 **Updating to the latest version?**
 ```bash
-npx get-shit-done-cc@latest
+npx gsd-teams@latest
 ```
 
 **Using Docker or containerized environments?**
 
 If file reads fail with tilde paths (`~/.claude/...`), set `CLAUDE_CONFIG_DIR` before installing:
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx gsd-teams --global
 ```
 This ensures absolute paths are used instead of `~` which may not expand correctly in containers.
 
@@ -656,12 +656,12 @@ To remove GSD completely:
 
 ```bash
 # Global installs
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
+npx gsd-teams --claude --global --uninstall
+npx gsd-teams --opencode --global --uninstall
 
 # Local installs (current project)
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
+npx gsd-teams --claude --local --uninstall
+npx gsd-teams --opencode --local --uninstall
 ```
 
 This removes all GSD commands, agents, hooks, and settings while preserving your other configurations.

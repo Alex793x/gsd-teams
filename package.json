@@ -1,9 +1,9 @@
 {
-  "name": "get-shit-done-cc",
-  "version": "1.11.1",
-  "description": "A meta-prompting, context engineering and spec-driven development system for Claude Code, OpenCode and Gemini by TÂCHES.",
+  "name": "gsd-teams",
+  "version": "1.0.0",
+  "description": "Team extension for Get Shit Done - multiple developers working on the same project without stepping on each other.",
   "bin": {
-    "get-shit-done-cc": "bin/install.js"
+    "gsd-teams": "bin/install.js"
   },
   "files": [
     "bin",
@@ -21,17 +21,19 @@
     "context-engineering",
     "spec-driven-development",
     "gemini",
-    "gemini-cli"
+    "gemini-cli",
+    "teams",
+    "collaboration"
   ],
-  "author": "TÂCHES",
+  "author": "TÂCHES (original), alexthh (team extension)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/glittercowboy/get-shit-done.git"
+    "url": "git+https://github.com/alexthh/gsd-teams.git"
   },
-  "homepage": "https://github.com/glittercowboy/get-shit-done",
+  "homepage": "https://github.com/alexthh/gsd-teams",
   "bugs": {
-    "url": "https://github.com/glittercowboy/get-shit-done/issues"
+    "url": "https://github.com/alexthh/gsd-teams/issues"
   },
   "engines": {
     "node": ">=16.7.0"
