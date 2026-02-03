@@ -1,72 +1,86 @@
 <div align="center">
 
-# GET SHIT DONE
+# GSD-TEAMS
 
-**A light-weight and powerful meta-prompting, context engineering and spec-driven development system for Claude Code, OpenCode, and Gemini CLI.**
+**Team extension for [Get Shit Done](https://github.com/glittercowboy/get-shit-done) — multiple developers working on the same project without stepping on each other.**
 
-**Solves context rot — the quality degradation that happens as Claude fills its context window.**
+**Everything from GSD + isolated sessions that sync cleanly via git.**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/5JJgD5svVS)
-[![GitHub stars](https://img.shields.io/github/stars/glittercowboy/get-shit-done?style=for-the-badge&logo=github&color=181717)](https://github.com/glittercowboy/get-shit-done)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
-
-<br>
-
-```bash
-npx get-shit-done-cc
-```
-
-**Works on Mac, Windows, and Linux.**
-
-<br>
-
-![GSD Install](assets/terminal.svg)
 
 <br>
 
 *"If you know clearly what you want, this WILL build it for you. No bs."*
 
-*"I've done SpecKit, OpenSpec and Taskmaster — this has produced the best results for me."*
-
 *"By far the most powerful addition to my Claude Code. Nothing over-engineered. Literally just gets shit done."*
 
 <br>
 
-**Trusted by engineers at Amazon, Google, Shopify, and Webflow.**
-
-[Why I Built This](#why-i-built-this) · [How It Works](#how-it-works) · [Commands](#commands) · [Why It Works](#why-it-works)
+[What's Different](#whats-different-from-gsd) · [How It Works](#how-it-works) · [Team Workflows](#team-workflows) · [Commands](#commands)
 
 </div>
 
 ---
 
-## Why I Built This
+## What's Different from GSD
 
-I'm a solo developer. I don't write code — Claude Code does.
+GSD-Teams extends the original [Get Shit Done](https://github.com/glittercowboy/get-shit-done) framework with team collaboration support. **Solo projects continue working unchanged.**
 
-Other spec-driven development tools exist; BMAD, Speckit... But they all seem to make things way more complicated than they need to be (sprint ceremonies, story points, stakeholder syncs, retrospectives, Jira workflows) or lack real big picture understanding of what you're building. I'm not a 50-person software company. I don't want to play enterprise theater. I'm just a creative person trying to build great things that work.
+### The Problem
 
-So I built GSD. The complexity is in the system, not in your workflow. Behind the scenes: context engineering, XML prompt formatting, subagent orchestration, state management. What you see: a few commands that just work.
+Original GSD tracks everything in git — including `STATE.md` which stores your current position, decisions, and session info. When two developers work on the same project:
 
-The system gives Claude everything it needs to do the work *and* verify it. I trust the workflow. It just does a good job.
+- Developer A is on Phase 3, Task 2
+- Developer B pulls, sees A's position, gets confused
+- Both commit STATE.md changes — merge conflicts
+- Session state bleeds between developers
 
-That's what this is. No enterprise roleplay bullshit. Just an incredibly effective system for building cool stuff consistently using Claude Code.
+### The Solution
 
-— **TÂCHES**
+GSD-Teams splits state into **shared** (git-tracked) and **ephemeral** (gitignored):
+
+| What | Solo Project | Team Project |
+|------|--------------|--------------|
+| `PLAN.md`, `SUMMARY.md` | Git-tracked | Git-tracked |
+| `STATE.md` | Git-tracked | Gitignored |
+| `sessions/{user}/` | Created locally | Created locally |
+
+Each developer gets isolated session tracking while sharing the actual work artifacts.
+
+### Key Additions
+
+| Feature | What it does |
+|---------|--------------|
+| **User Identity** | Auto-detects developer via `git user.name` |
+| **Session Directories** | `.planning/sessions/{user}/` for per-developer state |
+| **Session Hydration** | Rebuilds task progress when resuming work |
+| **Branch Namespacing** | `gsd/v{version}-{feature-slug}` for milestone isolation |
+| **Squash Merge** | Clean history without GSD micro-commits in main |
+
+### Backward Compatibility
+
+Existing solo GSD projects work unchanged:
+- No migration required
+- `STATE.md` continues working as before
+- Team features are opt-in via `.planning/.gitignore`
 
 ---
 
-Vibecoding has a bad reputation. You describe what you want, AI generates code, and you get inconsistent garbage that falls apart at scale.
+## Why GSD Exists
 
-GSD fixes that. It's the context engineering layer that makes Claude Code reliable. Describe your idea, let the system extract everything it needs to know, and let Claude Code get to work.
+GSD is the context engineering layer that makes Claude Code reliable at scale. Describe your idea, let the system extract everything it needs to know, and let Claude Code get to work.
+
+No enterprise roleplay. Just an incredibly effective system for building cool stuff consistently.
+
+GSD-Teams adds the missing piece: **multiple developers can use GSD on the same project without conflicts.**
 
 ---
 
 ## Who This Is For
 
-People who want to describe what they want and have it built correctly — without pretending they're running a 50-person engineering org.
+- **Teams** using Claude Code on shared projects
+- **Solo developers** who want team-ready workflows from the start
+- Anyone who wants to describe what they want and have it built correctly
 
 ---
 
@@ -332,6 +346,73 @@ Use for: bug fixes, small features, config changes, one-off tasks.
 
 ---
 
+## Team Workflows
+
+GSD-Teams adds workflows for multi-developer collaboration.
+
+### Session Management
+
+Each developer gets isolated session state via `git user.name`:
+
+```bash
+# Developer "alice" runs execute-plan
+# Creates: .planning/sessions/alice/current-plan.md
+
+# Developer "bob" runs execute-plan
+# Creates: .planning/sessions/bob/current-plan.md
+```
+
+Sessions are gitignored — no conflicts, no confusion.
+
+### Branch Strategy
+
+For team projects, use milestone-level branches:
+
+```bash
+# Start milestone on feature branch
+git checkout -b gsd/v1.0-user-auth
+
+# All GSD work happens here
+/gsd:plan-phase 1
+/gsd:execute-plan
+...
+
+# Complete milestone with squash merge
+/gsd:complete-milestone
+# → Offers: squash merge (recommended) or merge with history
+```
+
+Squash merge keeps main history clean — one commit per milestone instead of dozens of GSD micro-commits.
+
+### Resuming Work
+
+When returning to a project:
+
+```
+/gsd:resume-work
+```
+
+The system:
+1. Detects your user identity
+2. Finds your session state (if any)
+3. Hydrates task progress from persistent PLAN.md files
+4. Shows where you left off
+
+Works whether you're the only developer or one of many.
+
+### Team vs Solo
+
+| Workflow | Solo | Team |
+|----------|------|------|
+| `/gsd:new-project` | STATE.md tracked | STATE.md gitignored |
+| `/gsd:execute-plan` | Same | Creates session directory |
+| `/gsd:progress` | Shows position | Shows position + session info |
+| `/gsd:complete-milestone` | Tags release | Offers squash merge |
+
+The core workflow is identical. Team features activate automatically when `.planning/.gitignore` exists.
+
+---
+
 ## Why It Works
 
 ### Context Engineering
@@ -346,9 +427,10 @@ GSD handles it for you:
 | `research/` | Ecosystem knowledge (stack, features, architecture, pitfalls) |
 | `REQUIREMENTS.md` | Scoped v1/v2 requirements with phase traceability |
 | `ROADMAP.md` | Where you're going, what's done |
-| `STATE.md` | Decisions, blockers, position — memory across sessions |
+| `STATE.md` | Decisions, blockers, position — per-developer in team mode |
 | `PLAN.md` | Atomic task with XML structure, verification steps |
 | `SUMMARY.md` | What happened, what changed, committed to history |
+| `sessions/{user}/` | Per-developer session state (gitignored) |
 | `todos/` | Captured ideas and tasks for later work |
 
 Size limits based on where Claude's quality degrades. Stay under, get consistent excellence.
@@ -586,28 +668,13 @@ This removes all GSD commands, agents, hooks, and settings while preserving your
 
 ---
 
-## Community Ports
+## Attribution
 
-OpenCode and Gemini CLI are now natively supported via `npx get-shit-done-cc`.
+GSD-Teams is a fork of [Get Shit Done](https://github.com/glittercowboy/get-shit-done) by TÂCHES.
 
-These community ports pioneered multi-runtime support:
+The original GSD is an excellent solo development framework. This fork adds team collaboration features while maintaining full backward compatibility with solo projects.
 
-| Project | Platform | Description |
-|---------|----------|-------------|
-| [gsd-opencode](https://github.com/rokicool/gsd-opencode) | OpenCode | Original OpenCode adaptation |
-| [gsd-gemini](https://github.com/uberfuzzy/gsd-gemini) | Gemini CLI | Original Gemini adaptation |
-
----
-
-## Star History
-
-<a href="https://star-history.com/#glittercowboy/get-shit-done&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=glittercowboy/get-shit-done&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=glittercowboy/get-shit-done&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=glittercowboy/get-shit-done&type=Date" />
- </picture>
-</a>
+**Original project:** [github.com/glittercowboy/get-shit-done](https://github.com/glittercowboy/get-shit-done)
 
 ---
 
@@ -619,6 +686,6 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Claude Code is powerful. GSD makes it reliable.**
+**GSD for solo. GSD-Teams for collaboration.**
 
 </div>
