@@ -10,9 +10,9 @@
 
 <br>
 
-*"If you know clearly what you want, this WILL build it for you. No bs."*
+*"Finally the best from GSD, now working for our internal team!!"*
 
-*"By far the most powerful addition to my Claude Code. Nothing over-engineered. Literally just gets shit done."*
+*"I fell in love with GSD, but it sucked not being able to use with our team. Now we can!!"*
 
 <br>
 
