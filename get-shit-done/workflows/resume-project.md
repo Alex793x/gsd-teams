@@ -62,7 +62,8 @@ cat .planning/PROJECT.md
 Look for incomplete work that needs attention:
 
 ```bash
-# User identity function for session detection
+# Session integration: See get-shit-done/references/session-hydration.md
+# get_session_user() - from user-identity.md
 get_session_user() {
   local raw
   raw=$(git config user.name 2>/dev/null)

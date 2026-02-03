@@ -76,6 +76,7 @@ This step runs on EVERY execute-plan invocation. Session files enable task progr
 **1. Get sanitized username:**
 
 ```bash
+# Session integration: See get-shit-done/references/session-hydration.md
 # get_session_user() - from user-identity.md
 get_session_user() {
   local raw
