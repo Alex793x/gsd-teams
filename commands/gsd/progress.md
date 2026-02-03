@@ -72,6 +72,42 @@ If missing both ROADMAP.md and PROJECT.md: suggest `/gsd:new-project`.
 - Check for CONTEXT.md: For phases without PLAN.md files, check if `{phase}-CONTEXT.md` exists in phase directory
 - Count pending todos: `ls .planning/todos/pending/*.md 2>/dev/null | wc -l`
 - Check for active debug sessions: `ls .planning/debug/*.md 2>/dev/null | grep -v resolved | wc -l`
+
+**Check for active session:**
+
+```bash
+# Session integration: See get-shit-done/references/session-hydration.md
+# get_session_user() - from user-identity.md
+get_session_user() {
+  local raw
+  raw=$(git config user.name 2>/dev/null)
+  [ -z "$raw" ] && raw=$(whoami 2>/dev/null)
+  [ -z "$raw" ] && raw=$(hostname -s 2>/dev/null)
+  [ -z "$raw" ] && raw="unknown"
+
+  echo "$raw" \
+    | tr '[:upper:]' '[:lower:]' \
+    | tr ' ' '-' \
+    | tr -cd 'a-z0-9-' \
+    | sed 's/--*/-/g' \
+    | sed 's/^-//;s/-$//'
+}
+
+# Check for active session
+user=$(get_session_user)
+session_file=".planning/sessions/${user}/current-plan.md"
+
+if [ -f "$session_file" ]; then
+  complete=$(grep -c 'status="complete"' "$session_file" 2>/dev/null || echo 0)
+  in_progress=$(grep -c 'status="in-progress"' "$session_file" 2>/dev/null || echo 0)
+  pending=$(grep -c 'status="pending"' "$session_file" 2>/dev/null || echo 0)
+  total=$((complete + in_progress + pending))
+  plan_path=$(grep -m1 '^<!-- Plan:' "$session_file" | sed 's/.*Plan: \(.*\) -->/\1/')
+  echo "Active session: $complete/$total tasks complete"
+fi
+```
+
+Store session info for the report step.
   </step>
 
 <step name="report">
@@ -91,6 +127,8 @@ If missing both ROADMAP.md and PROJECT.md: suggest `/gsd:new-project`.
 Phase [N] of [total]: [phase-name]
 Plan [M] of [phase-total]: [status]
 CONTEXT: [✓ if CONTEXT.md exists | - if not]
+[If active session exists:]
+Tasks: [X]/[Y] complete (from session)
 
 ## Key Decisions Made
 - [decision 1 from STATE.md]
