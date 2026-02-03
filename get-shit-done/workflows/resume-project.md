@@ -186,6 +186,91 @@ Based on project state, determine the most logical next action:
 → Primary: Resume from checkpoint
 → Option: Start fresh on current plan
 
+**If session file exists with incomplete work:**
+
+First check if session is stale using is_session_stale() 4-check algorithm:
+
+```bash
+# Check if session is stale
+is_session_stale() {
+  local session_file="$1"
+  local plan_path started_ts
+
+  # Extract header info
+  plan_path=$(grep -m1 '^<!-- Plan:' "$session_file" | sed 's/.*Plan: \(.*\) -->/\1/')
+
+  # Check 1: Does the plan file still exist?
+  if [ ! -f "$plan_path" ]; then
+    echo "STALE: Plan file no longer exists"
+    return 0
+  fi
+
+  # Check 2: Does a SUMMARY already exist for this plan?
+  local summary_path="${plan_path/PLAN/SUMMARY}"
+  if [ -f "$summary_path" ]; then
+    echo "STALE: Plan already completed (SUMMARY exists)"
+    return 0
+  fi
+
+  # Check 3: Is this plan in the current phase?
+  local plan_phase current_phase
+  plan_phase=$(echo "$plan_path" | grep -oE '/[0-9]+-' | head -1 | tr -d '/-')
+  current_phase=$(grep -E '^\|.*In progress' .planning/ROADMAP.md 2>/dev/null \
+    | head -1 | grep -oE '[0-9]+' | head -1)
+
+  if [ -n "$current_phase" ] && [ "$plan_phase" != "$current_phase" ]; then
+    echo "STALE: Phase has advanced (was $plan_phase, now $current_phase)"
+    return 0
+  fi
+
+  # Check 4: Task count matches?
+  local session_tasks plan_tasks
+  session_tasks=$(grep -c '<task[^>]*type=' "$session_file")
+  plan_tasks=$(grep -c '<task[^>]*type=' "$plan_path")
+
+  if [ "$session_tasks" != "$plan_tasks" ]; then
+    echo "STALE: Task count mismatch ($session_tasks vs $plan_tasks)"
+    return 0
+  fi
+
+  # Session is valid
+  return 1
+}
+
+# Find resume point from session file
+parse_resume_point() {
+  local file="$1"
+  local task_num=0
+  local resume_task=""
+
+  # Read task statuses in order
+  while IFS= read -r status; do
+    task_num=$((task_num + 1))
+    case "$status" in
+      complete) ;;  # Task done, continue
+      in-progress|pending)
+        resume_task="$task_num"
+        break
+        ;;
+    esac
+  done < <(grep -E '<task[^>]*status=' "$file" | sed 's/.*status="\([^"]*\)".*/\1/')
+
+  if [ -z "$resume_task" ]; then
+    echo "ALL_COMPLETE"
+  else
+    echo "$resume_task"
+  fi
+}
+```
+
+**Session routing logic:**
+- If session is stale → Archive stale session, start fresh from current PLAN.md
+- If session valid with in-progress/pending tasks:
+  → Primary: Resume session (continue from last task)
+  → Parse resume point using parse_resume_point()
+  → Display: "Resume from task {N} of {total}?"
+  → Option: Start fresh (abandon session progress)
+
 **If incomplete plan (PLAN without SUMMARY):**
 → Primary: Complete the incomplete plan
 → Option: Abandon and move on
