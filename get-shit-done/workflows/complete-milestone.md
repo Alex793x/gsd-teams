@@ -583,6 +583,8 @@ Progress: [updated progress bar]
 
 Check if branching was used and offer merge options.
 
+**Reference:** See `get-shit-done/references/squash-merge.md` for detailed squash merge documentation.
+
 **Check branching strategy:**
 
 ```bash
@@ -654,6 +656,19 @@ AskUserQuestion([
 
 **If "Squash merge":**
 
+**1. Pre-squash commit review:**
+
+Show what will be consolidated:
+
+```bash
+# Count commits being squashed
+COMMIT_COUNT=$(git rev-list --count main..HEAD)
+echo "These $COMMIT_COUNT commits will be squashed into one:"
+git log main..HEAD --oneline --no-decorate
+```
+
+**2. Perform squash merge:**
+
 ```bash
 CURRENT_BRANCH=$(git branch --show-current)
 git checkout main
@@ -663,7 +678,6 @@ if [ "$BRANCHING_STRATEGY" = "phase" ]; then
   for branch in $PHASE_BRANCHES; do
     echo "Squash merging $branch..."
     git merge --squash "$branch"
-    git commit -m "feat: $branch for v[X.Y]"
   done
 fi
 
@@ -671,13 +685,66 @@ fi
 if [ "$BRANCHING_STRATEGY" = "milestone" ]; then
   echo "Squash merging $MILESTONE_BRANCH..."
   git merge --squash "$MILESTONE_BRANCH"
-  git commit -m "feat: $MILESTONE_BRANCH for v[X.Y]"
 fi
+```
 
+**If conflicts occur:**
+
+```
+Conflicts detected during squash merge.
+
+To resolve:
+1. Edit conflicting files to resolve markers (<<<<<<< / ======= / >>>>>>>)
+2. Stage resolved files: git add <resolved-files>
+3. Complete merge: git commit (message will be prompted below)
+
+For complex conflicts, consider:
+- git merge --abort to cancel and try rebasing first
+- See get-shit-done/references/squash-merge.md for detailed conflict guidance
+```
+
+**3. Create summary commit with rich message:**
+
+```bash
+git commit -m "$(cat <<'EOF'
+feat: v[X.Y] [Milestone Name]
+
+[One-line delivered statement from milestone entry]
+
+Key accomplishments:
+- [From milestone stats/accomplishments]
+- [Key feature 2]
+- [Key feature 3]
+
+Phases: [X]-[Y] ([N] plans, [M] tasks)
+Branch: gsd/v[X.Y]-[slug]
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+**4. Post-squash verification:**
+
+```bash
+# Verify squash succeeded
+SQUASH_COMMIT=$(git log main -1 --format="%h %s")
+echo "✓ Squashed to: $SQUASH_COMMIT"
+
+# Verify no diff between branch and main (all code merged)
+DIFF_COUNT=$(git diff "$MILESTONE_BRANCH" main --stat | wc -l)
+if [ "$DIFF_COUNT" -eq 0 ]; then
+  echo "✓ All code from branch merged to main"
+else
+  echo "⚠️ Differences detected - review with: git diff $MILESTONE_BRANCH main"
+fi
+```
+
+```bash
 git checkout "$CURRENT_BRANCH"
 ```
 
-Report: "Squash merged branches to main"
+Report: "✓ Squash merged [N] commits to main as: [commit hash preview]"
 
 **If "Merge with history":**
 
