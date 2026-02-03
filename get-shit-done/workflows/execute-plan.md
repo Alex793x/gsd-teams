@@ -153,6 +153,130 @@ SUMMARY naming follows same pattern:
 
 Confirm with user if ambiguous.
 
+**Session resume detection (after plan identified):**
+
+After identifying the plan to execute, check for existing session file:
+
+```bash
+SESSION_FILE="${SESSION_DIR}/current-plan.md"
+
+if [ -f "$SESSION_FILE" ]; then
+  # Session exists - check if valid or stale
+  # Use is_session_stale() pattern from session-hydration.md
+fi
+```
+
+**is_session_stale() - from session-hydration.md:**
+
+```bash
+is_session_stale() {
+  local session_file="$1"
+  local plan_path
+
+  # Extract header info
+  plan_path=$(grep -m1 '^<!-- Plan:' "$session_file" | sed 's/.*Plan: \(.*\) -->/\1/')
+
+  # Check 1: Does the plan file still exist?
+  if [ ! -f "$plan_path" ]; then
+    echo "STALE: Plan file no longer exists"
+    return 0
+  fi
+
+  # Check 2: Does a SUMMARY already exist for this plan?
+  local summary_path="${plan_path/PLAN/SUMMARY}"
+  if [ -f "$summary_path" ]; then
+    echo "STALE: Plan already completed (SUMMARY exists)"
+    return 0
+  fi
+
+  # Check 3: Is this plan in the current phase?
+  local plan_phase current_phase
+  plan_phase=$(echo "$plan_path" | grep -oE '/[0-9]+-' | head -1 | tr -d '/-')
+  current_phase=$(grep -E '^\|.*In progress' .planning/ROADMAP.md 2>/dev/null \
+    | head -1 | grep -oE '[0-9]+' | head -1)
+
+  if [ -n "$current_phase" ] && [ "$plan_phase" != "$current_phase" ]; then
+    echo "STALE: Phase has advanced (was $plan_phase, now $current_phase)"
+    return 0
+  fi
+
+  # Check 4: Task count matches?
+  local session_tasks plan_tasks
+  session_tasks=$(grep -c '<task[^>]*type=' "$session_file")
+  plan_tasks=$(grep -c '<task[^>]*type=' "$plan_path")
+
+  if [ "$session_tasks" != "$plan_tasks" ]; then
+    echo "STALE: Task count mismatch ($session_tasks vs $plan_tasks)"
+    return 0
+  fi
+
+  # Session is valid
+  return 1
+}
+```
+
+**If session is stale:** Archive and bootstrap fresh:
+
+```bash
+# Archive stale session with timestamp
+archive_name="current-plan.$(date +%Y%m%d%H%M%S).stale"
+mv "$SESSION_FILE" "${SESSION_DIR}/${archive_name}"
+echo "Archived stale session to ${archive_name}"
+echo "Will bootstrap fresh session in execute step"
+```
+
+Display: "Previous session was stale, starting fresh"
+
+**If session is valid:** Parse resume point using pattern from session-hydration.md:
+
+```bash
+# parse_resume_point() - from session-hydration.md
+parse_resume_point() {
+  local file="$1"
+  local task_num=0
+  local resume_task=""
+
+  # Extract task statuses in order
+  while IFS= read -r status; do
+    task_num=$((task_num + 1))
+    case "$status" in
+      complete)
+        # Task done, continue
+        ;;
+      in-progress|pending)
+        # Found resume point
+        resume_task="$task_num"
+        break
+        ;;
+    esac
+  done < <(grep -E '<task[^>]*status=' "$file" | sed 's/.*status="\([^"]*\)".*/\1/')
+
+  if [ -z "$resume_task" ]; then
+    echo "ALL_COMPLETE"
+  else
+    echo "$resume_task"
+  fi
+}
+
+RESUME_POINT=$(parse_resume_point "$SESSION_FILE")
+```
+
+**Resume point handling:**
+
+| Result | Meaning | Action |
+|--------|---------|--------|
+| `ALL_COMPLETE` | Plan already finished | Check for next plan in phase |
+| `1` | No tasks started | Start from beginning |
+| `N > 1` | Tasks 1 to N-1 complete | Skip to task N |
+
+**If resume point > 1:**
+
+Display: "Resuming from task {N} (previous session detected)"
+
+Store `RESUME_TASK_NUM` for execute step to skip completed tasks.
+
+**If no session exists:** Will be created by execute step on first task.
+
 <config-check>
 ```bash
 cat .planning/config.json 2>/dev/null
