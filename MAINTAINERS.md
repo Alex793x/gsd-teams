@@ -1,6 +1,9 @@
-# GSD Maintainer Guide
+# GSD-Teams Maintainer Guide
 
 Quick reference for release workflows and maintenance tasks.
+
+> **Fork of Get Shit Done**
+> GSD-Teams is a fork of [Get Shit Done](https://github.com/glittercowboy/get-shit-done) by TÂCHES, extended with team collaboration features. All credit for the original framework goes to TÂCHES.
 
 ## Release Workflow
 
@@ -100,7 +103,7 @@ The codebase intelligence system was removed partly because sql.js added 21MB.
 
 Within 72 hours:
 ```bash
-npm unpublish get-shit-done-cc@1.9.5
+npm unpublish gsd-teams@1.9.5
 ```
 
 After 72 hours: Publish a fix as new patch version.

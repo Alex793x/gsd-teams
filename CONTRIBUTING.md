@@ -1,12 +1,15 @@
-# Contributing to Get Shit Done
+# Contributing to GSD-Teams
 
 No enterprise theater. Ship useful code.
+
+> **Fork of Get Shit Done**
+> GSD-Teams is a fork of [Get Shit Done](https://github.com/alexthh/gsd-teams) by TÂCHES, extended with team collaboration features. All credit for the original framework goes to TÂCHES.
 
 ---
 
 ## Philosophy
 
-GSD optimizes for **solo developer + Claude workflow**. The release process follows the same principle: complexity lives in automation, not your workflow.
+GSD optimizes for **developer + Claude workflow**, with GSD-Teams extending this to support multiple developers on the same project. The release process follows the same principle: complexity lives in automation, not your workflow.
 
 **What this means:**
 - No sprint ceremonies or release committees
@@ -32,7 +35,7 @@ main ═════════════════════════
 
 ### `main`
 
-Production. Always installable via `npx get-shit-done-cc`.
+Production. Always installable via `npx gsd-teams`.
 
 | Rule | Why |
 |------|-----|
@@ -142,7 +145,7 @@ git tag -a v1.10.0-beta.1 -m "Beta: codebase intelligence stabilized"
 git tag -a v1.10.0 -m "Release: codebase intelligence"
 ```
 
-Users opt-in: `npm install get-shit-done-cc@1.10.0-alpha.1`
+Users opt-in: `npm install gsd-teams@1.10.0-alpha.1`
 
 **If it doesn't work out:** Delete pre-release tags, no messy public revert on main.
 
@@ -171,7 +174,7 @@ npm publish
 Create formal releases for minor+ versions. Copy the CHANGELOG section.
 
 ```
-Go to: github.com/glittercowboy/get-shit-done/releases/new
+Go to: github.com/alexthh/gsd-teams/releases/new
 Select tag: v1.10.0
 Title: v1.10.0
 Description: [paste from CHANGELOG.md]
@@ -302,7 +305,7 @@ Exception: CHANGELOG.md, MIGRATION.md, git commits
 
 ```bash
 # Clone
-git clone https://github.com/glittercowboy/get-shit-done.git
+git clone https://github.com/alexthh/gsd-teams.git
 cd get-shit-done
 
 # Install
@@ -310,7 +313,7 @@ npm install
 
 # Test locally
 npm link
-npx get-shit-done-cc
+npx gsd-teams
 
 # Run tests
 npm test

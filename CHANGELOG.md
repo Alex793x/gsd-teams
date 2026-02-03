@@ -1,12 +1,53 @@
 # Changelog
 
-All notable changes to GSD will be documented in this file.
+All notable changes to GSD-Teams will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## GSD-Teams
+
+**GSD-Teams** is a fork of [Get Shit Done](https://github.com/glittercowboy/get-shit-done) by TÂCHES, extended with team collaboration features.
+
+All credit for the original GSD framework goes to TÂCHES. This fork exists because the original lacked team functionality, and multiple developers working on the same GSD project would encounter STATE.md conflicts and session bleeding.
+
+---
+
 ## [Unreleased]
 
-## [1.11.1] - 2026-01-31
+## [1.0.0] - 2026-02-03
+
+### Added (Team Features)
+
+GSD-Teams v1.0.0 introduces team collaboration support while maintaining full backward compatibility with solo projects.
+
+- **State Architecture Split** — STATE.md and sessions/ are now gitignored for team projects, preventing developer conflicts
+- **User Identity Detection** — Automatic developer identification via `git user.name` with fallback chain
+- **Session Directories** — Per-developer session isolation at `.planning/sessions/{user}/`
+- **Session Hydration** — Rebuilds task progress when developers resume work
+- **Branch Namespacing** — `gsd/v{version}-{feature-slug}` convention for milestone isolation
+- **Squash Merge Workflow** — Clean history without GSD micro-commits polluting main branch
+- **Backward Compatibility** — Solo projects continue working unchanged, no migration required
+
+### Changed
+
+- Package renamed from `get-shit-done-cc` to `gsd-teams`
+- Install command changed from `npx get-shit-done-cc` to `npx gsd-teams`
+
+### Attribution
+
+This release is built on top of GSD v1.11.1. All original GSD functionality remains intact.
+
+---
+
+## Original GSD Changelog
+
+The following changelog documents the original Get Shit Done releases by TÂCHES. GSD-Teams inherits all this functionality.
+
+---
+
+## [1.11.1] - 2026-01-31 (Original GSD)
 
 ### Added
 - Git branching strategy configuration with three options:
