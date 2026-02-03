@@ -3,7 +3,7 @@
 No enterprise theater. Ship useful code.
 
 > **Fork of Get Shit Done**
-> GSD-Teams is a fork of [Get Shit Done](https://github.com/alexthh/gsd-teams) by TÂCHES, extended with team collaboration features. All credit for the original framework goes to TÂCHES.
+> GSD-Teams is a fork of [Get Shit Done](https://github.com/Alex793x/gsd-teams) by TÂCHES, extended with team collaboration features. All credit for the original framework goes to TÂCHES.
 
 ---
 
@@ -174,7 +174,7 @@ npm publish
 Create formal releases for minor+ versions. Copy the CHANGELOG section.
 
 ```
-Go to: github.com/alexthh/gsd-teams/releases/new
+Go to: github.com/Alex793x/gsd-teams/releases/new
 Select tag: v1.10.0
 Title: v1.10.0
 Description: [paste from CHANGELOG.md]
@@ -305,7 +305,7 @@ Exception: CHANGELOG.md, MIGRATION.md, git commits
 
 ```bash
 # Clone
-git clone https://github.com/alexthh/gsd-teams.git
+git clone https://github.com/Alex793x/gsd-teams.git
 cd get-shit-done
 
 # Install

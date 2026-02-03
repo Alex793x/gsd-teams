@@ -1,6 +1,6 @@
 {
   "name": "gsd-teams",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Team extension for Get Shit Done - multiple developers working on the same project without stepping on each other.",
   "bin": {
     "gsd-teams": "bin/install.js"
@@ -25,15 +25,15 @@
     "teams",
     "collaboration"
   ],
-  "author": "TÂCHES (original), alexthh (team extension)",
+  "author": "TÂCHES (original), Alex793x (team extension)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alexthh/gsd-teams.git"
+    "url": "git+https://github.com/Alex793x/gsd-teams.git"
   },
-  "homepage": "https://github.com/alexthh/gsd-teams",
+  "homepage": "https://github.com/Alex793x/gsd-teams",
   "bugs": {
-    "url": "https://github.com/alexthh/gsd-teams/issues"
+    "url": "https://github.com/Alex793x/gsd-teams/issues"
   },
   "engines": {
     "node": ">=16.7.0"
