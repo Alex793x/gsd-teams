@@ -146,6 +146,10 @@ Present complete project status to user:
 ║  Plan:  [A] of [B] - [Status]                                ║
 ║  Progress: [██████░░░░] XX%                                  ║
 ║                                                               ║
+[If session file exists:]
+║  Session: [X] complete, [Y] pending, [Z] in-progress         ║
+║  Plan: [plan path from session header]                        ║
+║                                                               ║
 ║  Last activity: [date] - [what happened]                     ║
 ╚══════════════════════════════════════════════════════════════╝
 
@@ -161,6 +165,17 @@ Present complete project status to user:
 
     Resume with: Task tool (resume parameter with agent ID)
 
+[If session is stale:]
+⚠️  Stale session detected:
+    - Session references: [old plan path]
+    - Current phase: [current phase from ROADMAP.md]
+    Will archive and start fresh.
+
+[If in-progress task found in session:]
+⚠️  Interrupted task detected:
+    Task: [task name from session file]
+    Will resume from this task.
+
 [If pending todos exist:]
 📋 [N] pending todos — /gsd:check-todos to review
 
@@ -171,6 +186,31 @@ Present complete project status to user:
 
 [If alignment is not ✓:]
 ⚠️  Brief alignment: [status] - [assessment]
+```
+
+**Session display parsing:**
+
+```bash
+# Parse session info for display (use same get_session_user from check_incomplete_work)
+user=$(get_session_user)
+session_file=".planning/sessions/${user}/current-plan.md"
+
+if [ -f "$session_file" ]; then
+  # Task counts
+  in_progress=$(grep -c 'status="in-progress"' "$session_file" 2>/dev/null || echo 0)
+  pending=$(grep -c 'status="pending"' "$session_file" 2>/dev/null || echo 0)
+  complete=$(grep -c 'status="complete"' "$session_file" 2>/dev/null || echo 0)
+
+  # Plan path from header
+  plan_path=$(grep -m1 '^<!-- Plan:' "$session_file" | sed 's/.*Plan: \(.*\) -->/\1/')
+
+  # Check for in-progress (interrupted) task
+  if [ "$in_progress" -gt 0 ]; then
+    interrupted_task=$(grep -B5 'status="in-progress"' "$session_file" \
+      | grep '<name>' | sed 's/.*<name>\(.*\)<\/name>.*/\1/' | head -1)
+    echo "Interrupted task: $interrupted_task"
+  fi
+fi
 ```
 
 </step>
