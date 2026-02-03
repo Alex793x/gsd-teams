@@ -68,6 +68,50 @@ git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 Store `COMMIT_PLANNING_DOCS` for use in git operations.
 </step>
 
+<step name="session_bootstrap">
+**Bootstrap session directory for current user.**
+
+This step runs on EVERY execute-plan invocation. Session files enable task progress tracking and resume capability across context resets.
+
+**1. Get sanitized username:**
+
+```bash
+# get_session_user() - from user-identity.md
+get_session_user() {
+  local raw
+  raw=$(git config user.name 2>/dev/null)
+  [ -z "$raw" ] && raw=$(whoami 2>/dev/null)
+  [ -z "$raw" ] && raw=$(hostname -s 2>/dev/null)
+  [ -z "$raw" ] && raw="unknown"
+
+  echo "$raw" \
+    | tr '[:upper:]' '[:lower:]' \
+    | tr ' ' '-' \
+    | tr -cd 'a-z0-9-' \
+    | sed 's/--*/-/g' \
+    | sed 's/^-//;s/-$//'
+}
+
+SESSION_USER=$(get_session_user)
+```
+
+**2. Create session directory:**
+
+```bash
+# create_session_dir() - from session-structure.md
+SESSION_DIR=".planning/sessions/${SESSION_USER}"
+mkdir -p "$SESSION_DIR"
+```
+
+**3. Store for later steps:**
+
+The `SESSION_DIR` variable is now available for:
+- `identify_plan` step: Check for existing session file
+- `execute` step: Create/update current-plan.md
+
+**Note:** The session directory is gitignored (per state-architecture.md). It persists across terminal sessions but is never committed.
+</step>
+
 <step name="identify_plan">
 Find the next plan to execute:
 - Check roadmap for "In progress" phase
