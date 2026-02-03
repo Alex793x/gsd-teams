@@ -62,6 +62,22 @@ cat .planning/PROJECT.md
 Look for incomplete work that needs attention:
 
 ```bash
+# User identity function for session detection
+get_session_user() {
+  local raw
+  raw=$(git config user.name 2>/dev/null)
+  [ -z "$raw" ] && raw=$(whoami 2>/dev/null)
+  [ -z "$raw" ] && raw=$(hostname -s 2>/dev/null)
+  [ -z "$raw" ] && raw="unknown"
+
+  echo "$raw" \
+    | tr '[:upper:]' '[:lower:]' \
+    | tr ' ' '-' \
+    | tr -cd 'a-z0-9-' \
+    | sed 's/--*/-/g' \
+    | sed 's/^-//;s/-$//'
+}
+
 # Check for continue-here files (mid-plan resumption)
 ls .planning/phases/*/.continue-here*.md 2>/dev/null
 
@@ -75,6 +91,17 @@ done 2>/dev/null
 if [ -f .planning/current-agent-id.txt ] && [ -s .planning/current-agent-id.txt ]; then
   AGENT_ID=$(cat .planning/current-agent-id.txt | tr -d '\n')
   echo "Interrupted agent: $AGENT_ID"
+fi
+
+# Check for session file with in-progress work
+user=$(get_session_user)
+session_file=".planning/sessions/${user}/current-plan.md"
+if [ -f "$session_file" ]; then
+  # Parse task statuses
+  in_progress=$(grep -c 'status="in-progress"' "$session_file" 2>/dev/null || echo 0)
+  pending=$(grep -c 'status="pending"' "$session_file" 2>/dev/null || echo 0)
+  complete=$(grep -c 'status="complete"' "$session_file" 2>/dev/null || echo 0)
+  echo "Session: $complete complete, $in_progress in-progress, $pending pending"
 fi
 ```
 
@@ -94,6 +121,16 @@ fi
 - Subagent was spawned but session ended before completion
 - Read agent-history.json for task details
 - Flag: "Found interrupted agent"
+
+**If session file exists with in-progress tasks:**
+
+- Task was interrupted mid-execution
+- Flag: "Found interrupted task in session"
+
+**If session file exists with pending tasks:**
+
+- Session started but not completed
+- Flag: "Found incomplete session"
   </step>
 
 <step name="present_status">
