@@ -605,7 +605,94 @@ Execute each task in the prompt. **Deviations are normal** - handle them automat
 
 1. Read the @context files listed in the prompt
 
-2. For each task:
+2. **Session file initialization (before first task):**
+
+   Check if session file exists for this plan:
+
+   ```bash
+   SESSION_FILE="${SESSION_DIR}/current-plan.md"
+   PLAN_PATH=".planning/phases/XX-name/{phase}-{plan}-PLAN.md"  # Use actual plan path
+   ```
+
+   **If session file doesn't exist:** Bootstrap fresh session using pattern from session-hydration.md:
+
+   ```bash
+   # bootstrap_session() - from session-hydration.md
+   bootstrap_session() {
+     local plan_path="$1"
+     local session_dir="$2"
+     local session_file="${session_dir}/current-plan.md"
+     local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+     local user=$(get_session_user)
+
+     # Create session directory if needed
+     mkdir -p "$session_dir"
+
+     # Create header
+     cat > "$session_file" << EOF
+   <!-- Session progress for ${user} -->
+   <!-- Plan: ${plan_path} -->
+   <!-- Started: ${timestamp} -->
+
+   EOF
+
+     # Copy plan content with status="pending" injected
+     # Transform: <task type="auto"> → <task type="auto" status="pending">
+     sed 's/<task type="\([^"]*\)"/<task type="\1" status="pending"/g' \
+       "$plan_path" >> "$session_file"
+
+     echo "Bootstrapped session: $session_file"
+   }
+
+   # Create session file if not exists
+   if [ ! -f "$SESSION_FILE" ]; then
+     bootstrap_session "$PLAN_PATH" "$SESSION_DIR"
+   fi
+   ```
+
+   **If session file exists:** It was either just created by identify_plan resume logic, or is being continued from previous execution in same session.
+
+3. For each task:
+
+   **Session status update (before and after each task):**
+
+   Use `update_task_status()` pattern from session-hydration.md:
+
+   ```bash
+   # update_task_status() - from session-hydration.md
+   update_task_status() {
+     local session_file="$1"
+     local task_num="$2"
+     local new_status="$3"  # complete, in-progress, pending
+
+     # Use awk for precise Nth-occurrence replacement
+     awk -v n="$task_num" -v status="$new_status" '
+       /<task[^>]*type=/ {
+         count++
+         if (count == n) {
+           gsub(/status="[^"]*"/, "status=\"" status "\"")
+         }
+       }
+       { print }
+     ' "$session_file" > "${session_file}.tmp"
+
+     mv "${session_file}.tmp" "$session_file"
+   }
+   ```
+
+   **Before starting task N:**
+   ```bash
+   update_task_status "$SESSION_FILE" $TASK_NUM "in-progress"
+   ```
+
+   **After task N completes:**
+   ```bash
+   update_task_status "$SESSION_FILE" $TASK_NUM "complete"
+   ```
+
+   This enables resume detection: if session shows task as "in-progress", it was interrupted mid-execution.
+
+4. For each task:
 
    **If `type="auto"`:**
 
