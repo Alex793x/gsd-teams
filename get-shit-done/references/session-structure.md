@@ -198,3 +198,8 @@ Workflows will be updated to:
 - **State classification**: See `get-shit-done/references/state-architecture.md` for global vs ephemeral state split
 - **Identity detection**: See `get-shit-done/references/user-identity.md` for user detection and sanitization
 - **Gitignore patterns**: See `get-shit-done/templates/planning-gitignore.md` for sessions/ exclusion
+
+**Consistency verified (Phase 03-01):**
+- `current-plan.md` and `context.md` match Ephemeral State table in state-architecture.md
+- `sessions/` gitignore pattern confirmed in planning-gitignore.md
+- Shell snippets use identical detection/sanitization from user-identity.md
