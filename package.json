@@ -1,6 +1,6 @@
 {
   "name": "gsd-teams",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Team extension for Get Shit Done - multiple developers working on the same project without stepping on each other.",
   "bin": {
     "gsd-teams": "bin/install.js"
