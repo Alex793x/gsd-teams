@@ -1,6 +1,6 @@
 ---
 name: gsd:settings
-description: Configure GSD workflow toggles and model profile
+description: Configure GSD workflow toggles
 allowed-tools:
   - Read
   - Write
@@ -8,9 +8,9 @@ allowed-tools:
 ---
 
 <objective>
-Allow users to toggle workflow agents on/off and select model profile via interactive settings.
+Allow users to toggle workflow agents on/off via interactive settings.
 
-Updates `.planning/config.json` with workflow preferences and model profile selection.
+Updates `.planning/config.json` with workflow preferences.
 </objective>
 
 <process>
@@ -33,7 +33,6 @@ Parse current values (default to `true` if not present):
 - `workflow.research` — spawn researcher during plan-phase
 - `workflow.plan_check` — spawn plan checker during plan-phase
 - `workflow.verifier` — spawn verifier during execute-phase
-- `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
 
 ## 3. Present Settings
@@ -42,16 +41,6 @@ Use AskUserQuestion with current values shown:
 
 ```
 AskUserQuestion([
-  {
-    question: "Which model profile for agents?",
-    header: "Model",
-    multiSelect: false,
-    options: [
-      { label: "Quality", description: "Opus everywhere except verification (highest cost)" },
-      { label: "Balanced (Recommended)", description: "Opus for planning, Sonnet for execution/verification" },
-      { label: "Budget", description: "Sonnet for writing, Haiku for research/verification (lowest cost)" }
-    ]
-  },
   {
     question: "Spawn Plan Researcher? (researches domain before planning)",
     header: "Research",
@@ -101,7 +90,6 @@ Merge new settings into existing config.json:
 ```json
 {
   ...existing_config,
-  "model_profile": "quality" | "balanced" | "budget",
   "workflow": {
     "research": true/false,
     "plan_check": true/false,
@@ -126,7 +114,6 @@ Display:
 
 | Setting              | Value |
 |----------------------|-------|
-| Model Profile        | {quality/balanced/budget} |
 | Plan Researcher      | {On/Off} |
 | Plan Checker         | {On/Off} |
 | Execution Verifier   | {On/Off} |
@@ -135,7 +122,6 @@ Display:
 These settings apply to future /gsd:plan-phase and /gsd:execute-phase runs.
 
 Quick commands:
-- /gsd:set-profile <profile> — switch model profile
 - /gsd:plan-phase --research — force research
 - /gsd:plan-phase --skip-research — skip research
 - /gsd:plan-phase --skip-verify — skip plan check
@@ -145,7 +131,7 @@ Quick commands:
 
 <success_criteria>
 - [ ] Current config read
-- [ ] User presented with 5 settings (profile + 3 workflow toggles + git branching)
-- [ ] Config updated with model_profile, workflow, and git sections
+- [ ] User presented with 4 settings (3 workflow toggles + git branching)
+- [ ] Config updated with workflow and git sections
 - [ ] Changes confirmed to user
 </success_criteria>

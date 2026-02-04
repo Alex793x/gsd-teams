@@ -22,24 +22,6 @@ Documents are reference material for Claude when planning/executing. Always incl
 
 <process>
 
-<step name="resolve_model_profile" priority="first">
-Read model profile for agent spawning:
-
-```bash
-MODEL_PROFILE=$(cat .planning/config.json 2>/dev/null | grep -o '"model_profile"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"[^"]*"$' | tr -d '"' || echo "balanced")
-```
-
-Default to "balanced" if not set.
-
-**Model lookup table:**
-
-| Agent | quality | balanced | budget |
-|-------|---------|----------|--------|
-| gsd-codebase-mapper | sonnet | haiku | haiku |
-
-Store resolved model for use in Task calls below.
-</step>
-
 <step name="check_existing">
 Check if .planning/codebase/ already exists:
 
@@ -100,7 +82,7 @@ Use Task tool with `subagent_type="gsd-codebase-mapper"`, `model="{mapper_model}
 Task tool parameters:
 ```
 subagent_type: "gsd-codebase-mapper"
-model: "{mapper_model}"
+
 run_in_background: true
 description: "Map codebase tech stack"
 ```
@@ -123,7 +105,7 @@ Explore thoroughly. Write documents directly using templates. Return confirmatio
 Task tool parameters:
 ```
 subagent_type: "gsd-codebase-mapper"
-model: "{mapper_model}"
+
 run_in_background: true
 description: "Map codebase architecture"
 ```
@@ -146,7 +128,7 @@ Explore thoroughly. Write documents directly using templates. Return confirmatio
 Task tool parameters:
 ```
 subagent_type: "gsd-codebase-mapper"
-model: "{mapper_model}"
+
 run_in_background: true
 description: "Map codebase conventions"
 ```
@@ -169,7 +151,7 @@ Explore thoroughly. Write documents directly using templates. Return confirmatio
 Task tool parameters:
 ```
 subagent_type: "gsd-codebase-mapper"
-model: "{mapper_model}"
+
 run_in_background: true
 description: "Map codebase concerns"
 ```
